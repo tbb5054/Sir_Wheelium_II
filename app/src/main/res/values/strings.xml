@@ -4,5 +4,19 @@
     <string name="app_name">Sir_Wheelium_II</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="connection_button_name">Find Devices</string>
+    
+    <!-- Strings for Settings Menu  -->
+    <string name="bluetooth_settings">Bluetooth Settings</string>
+
+    <!-- Strings for Bluetooth Connection Screen -->
+    <string name="title_activity_bluetooth_connection">Bluetooth Connection</string>
+
+    <!-- Strings for Launch Screen -->
+    <string name="top_motor_hint">Top Motor Speed</string>
+    <string name="bottom_motor_hint">Bottom Motor Speed</string>
+    <string name="x_angle_hint">X Angle</string>
+    <string name="y_angle_hint">Y Angle</string>
+    <string name="launch_button">Launch Button</string>
 
 </resources>

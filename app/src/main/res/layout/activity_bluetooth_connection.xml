@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="1">
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="488dp"
+        android:id="@+id/bluetoothDevicesList"
+        android:paddingLeft="5dp" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="@string/connection_button_name"
+        android:id="@+id/connectionButton"
+        android:layout_gravity="center_horizontal|bottom|right" />
+</LinearLayout>
