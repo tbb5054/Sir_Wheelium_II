@@ -4,16 +4,22 @@
     android:layout_height="match_parent"
     android:weightSum="1">
 
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="488dp"
-        android:id="@+id/bluetoothDevicesList"
-        android:paddingLeft="5dp" />
-
     <Button
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="260dp"
+        android:layout_height="60dp"
         android:text="@string/connection_button_name"
         android:id="@+id/connectionButton"
-        android:layout_gravity="center_horizontal|bottom|right" />
+        android:layout_gravity="center_horizontal"
+        android:onClick="onFindDevicesClicked"
+        android:layout_marginTop="15dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:id="@+id/deviceStatusTextView"
+        android:layout_gravity="center_horizontal"
+        android:editable="false"
+        android:gravity="center_vertical|center_horizontal"
+        android:layout_marginTop="15dp"
+        android:clickable="true" />
 </LinearLayout>
