@@ -42,6 +42,31 @@
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp" />
 
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp">
+
+        <Button
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="Aim Left"
+            android:id="@+id/xClockwiseButton"
+            android:layout_marginLeft="20dp"
+            android:onClick="onXClockClicked" />
+
+        <Button
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="Aim Right"
+            android:id="@+id/xCounterClockwiseButton"
+            android:layout_marginLeft="20dp"
+            android:onClick="onXCounterClicked" />
+    </LinearLayout>
+
     <EditText
         android:layout_width="260dp"
         android:layout_height="60dp"
@@ -54,12 +79,27 @@
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp" />
 
-    <Button
-        android:layout_width="260dp"
-        android:layout_height="60dp"
-        android:text="@string/launch_button"
-        android:id="@+id/launchButton"
-        android:layout_gravity="center_horizontal"
-        android:onClick="onLaunchButtonClicked" />
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:layout_width="182dp"
+            android:layout_height="60dp"
+            android:text="@string/launch_button"
+            android:id="@+id/launchButton"
+            android:onClick="onLaunchButtonClicked"
+            android:layout_marginLeft="20dp" />
+
+        <EditText
+            android:layout_width="128dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/ballsEditText"
+            android:hint="# Of Balls"
+            android:layout_marginLeft="20dp" />
+    </LinearLayout>
 
 </LinearLayout>

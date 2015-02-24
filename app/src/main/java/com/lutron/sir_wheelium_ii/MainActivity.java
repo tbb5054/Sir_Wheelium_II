@@ -8,9 +8,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.lutron.sir_wheelium_ii.BluetoothConnectionActivity.ConnectedThread;
+
 // Note: This Main Activity relates to the launcher_activity_xml
 public class MainActivity extends ActionBarActivity {
 
+    private int BLUE_TOOTH_REQUEST_CODE = 555;
     // values to represent 1% and 1 degree value;
     private double MOTOR_PERCENT_FACTOR = 655.35;
     private double ANGLE_FACTOR = 182.0417;
@@ -25,6 +28,20 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.launcher_activity);
+
+        MyApplication myApplication = ((MyApplication)getApplicationContext());
+
+//        Button counterClockButton = (Button)findViewById(R.id.xCounterClockwiseButton);
+//        counterClockButton.setOnTouchListener(new OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+//                    increaseSize();
+//                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+//                    resetSize();
+//                }
+//            }
+//        });
     }
 
 
@@ -45,7 +62,7 @@ public class MainActivity extends ActionBarActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.bluetooth_settings) {
             Intent intent = new Intent(this, BluetoothConnectionActivity.class);
-            startActivity(intent);
+            startActivityForResult(intent, BLUE_TOOTH_REQUEST_CODE);
             return true;
         }
 
@@ -58,22 +75,20 @@ public class MainActivity extends ActionBarActivity {
      *******************
      *******************/
 
+    public void onXCounterClicked(View view){
+        String counterStartString = buildXAngleCommand(Rotation.CounterClockWise);
+    }
+
+    public void onXClockClicked(View view)    {
+        String counterClockStartString = buildXAngleCommand(Rotation.CounterClockWise);
+    }
+
     public void onLaunchButtonClicked(View view)
     {
-        String topMotor = buildTopMotorCommand();
-        String bottomMotor = buildBottomMotorCommand();
-        String xAngle = buildXAngleCommand();
-        String yAngle = buildYAngleCommand();
-        String launchBalls = buildLaunchBallsCommand();
-
-        String outPutString = String.format("TopMotor:%s\nBottomMotor:%s\nXAngle:%s\nYAngle%s\nLaunchBalls:%s",
-                                            buildTopMotorCommand(),
-                                            buildBottomMotorCommand(),
-                                            buildXAngleCommand(),
-                                            buildYAngleCommand(),
-                                            buildLaunchBallsCommand());
-
-        System.out.println(outPutString);
+        MyApplication myApplication = ((MyApplication)getApplicationContext());
+        ConnectedThread connectedThread = myApplication.getConnectedThread();
+        byte[] launchBytes = buildLaunchBallsCommand();
+        connectedThread.write(launchBytes);
     }
 
 
@@ -119,22 +134,33 @@ public class MainActivity extends ActionBarActivity {
                              0x00);
     }
 
-    public String buildXAngleCommand()
+    public String buildXAngleCommand(Rotation rotation)
     {
         byte commandByte = Command.AdjustAngle.getNumVal();
         byte servoNumberByte = X_SERVO_VALUE;
 
         int servoValue = (int)(getXAngle() * ANGLE_FACTOR);
-        byte leastSignificantByte = (byte)servoValue;
-        byte mostSignificantByte = (byte)(servoValue >>> 8);
 
-        return String.format("0x%02X%02X%02X%02X%02X%02X",
-                             commandByte,
-                             servoNumberByte,
-                             mostSignificantByte,
-                             leastSignificantByte,
-                             0x00,
-                             0x00);
+        if(rotation == Rotation.ClockWise)
+        {
+            return String.format("0x%02X%02X%02X%02X%02X%02X",
+                    commandByte,
+                    servoNumberByte,
+                    0x8f,
+                    0xff,
+                    0x00,
+                    0x00);
+        }
+        else
+        {
+            return String.format("0x%02X%02X%02X%02X%02X%02X",
+                    commandByte,
+                    servoNumberByte,
+                    0x6f,
+                    0xff,
+                    0x00,
+                    0x00);
+        }
     }
 
     public String buildYAngleCommand()
@@ -155,20 +181,29 @@ public class MainActivity extends ActionBarActivity {
                              0x00);
     }
 
-    public String buildLaunchBallsCommand()
+    public byte[] buildLaunchBallsCommand()
     {
         byte commandByte = Command.LaunchBalls.getNumVal();
 
         int numberOfBalls = getNumberOfBalls();
         byte ballsByte = (byte)numberOfBalls;
 
-        return String.format("0x%02X%02X%02X%02X%02X%02X",
-                             commandByte,
-                             ballsByte,
-                             0x00,
-                             0x00,
-                             0x00,
-                             0x00);
+        return new byte[]{
+                commandByte,
+                ballsByte,
+                0x00,
+                0x00,
+                0x00,
+                0x00
+        };
+
+//        return String.format("0x%02X%02X%02X%02X%02X%02X",
+//                             commandByte,
+//                             ballsByte,
+//                             0x00,
+//                             0x00,
+//                             0x00,
+//                             0x00);
     }
 
     /*******************
@@ -204,7 +239,8 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public int getNumberOfBalls(){
-        // TODO add support to launch multiple balls
-        return 1;
+        TextView ballsEditText = (TextView)findViewById(R.id.ballsEditText);
+
+        return Integer.parseInt(ballsEditText.getText().toString());
     }
 }

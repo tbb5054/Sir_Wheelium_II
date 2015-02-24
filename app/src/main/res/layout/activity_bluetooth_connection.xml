@@ -22,4 +22,22 @@
         android:gravity="center_vertical|center_horizontal"
         android:layout_marginTop="15dp"
         android:clickable="true" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:text="Paired Devices"
+        android:id="@+id/tvPD"
+        />
+
+    <ListView
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvPD"
+        android:layout_above="@+id/bConnectNew"
+        >
+    </ListView>
+
 </LinearLayout>
