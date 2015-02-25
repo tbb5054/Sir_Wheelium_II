@@ -5,7 +5,10 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.lutron.sir_wheelium_ii.BluetoothConnectionActivity.ConnectedThread;
@@ -21,8 +24,8 @@ public class MainActivity extends ActionBarActivity {
     // byte value constants for the motors and servos
     private byte TOP_MOTOR_VALUE = 0x00;
     private byte BOTTOM_MOTOR_VALUE = 0X01;
-    private byte X_SERVO_VALUE = 0X00;
-    private byte Y_SERVO_VALUE = 0X01;
+    private byte X_SERVO_VALUE = 0X02;
+    private byte Y_SERVO_VALUE = 0X03;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,17 +34,53 @@ public class MainActivity extends ActionBarActivity {
 
         MyApplication myApplication = ((MyApplication)getApplicationContext());
 
-//        Button counterClockButton = (Button)findViewById(R.id.xCounterClockwiseButton);
-//        counterClockButton.setOnTouchListener(new OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                if(event.getAction() == MotionEvent.ACTION_DOWN) {
-//                    increaseSize();
-//                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-//                    resetSize();
-//                }
-//            }
-//        });
+        Button counterClockButton = (Button)findViewById(R.id.xCounterClockwiseButton);
+        OnTouchListener counterClockListener=new OnTouchListener(){
+            public boolean onTouch(View v, MotionEvent event){
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    MyApplication myApplication = ((MyApplication)getApplicationContext());
+                    ConnectedThread connectedThread = myApplication.getConnectedThread();
+
+                    // set top motor
+                    byte[] launchBytes = buildStartCounterClockWiseCommand();
+                    connectedThread.write(launchBytes);
+                }
+                if (event.getAction() == MotionEvent.ACTION_UP){
+                    MyApplication myApplication = ((MyApplication)getApplicationContext());
+                    ConnectedThread connectedThread = myApplication.getConnectedThread();
+
+                    // set top motor
+                    byte[] launchBytes = buildStopXRotationCommand();
+                    connectedThread.write(launchBytes);
+                }
+                return false;
+            }
+        };
+        counterClockButton.setOnTouchListener(counterClockListener);
+
+        Button clockButton = (Button)findViewById(R.id.xClockwiseButton);
+        OnTouchListener clockListener=new OnTouchListener(){
+            public boolean onTouch(View v, MotionEvent event){
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    MyApplication myApplication = ((MyApplication)getApplicationContext());
+                    ConnectedThread connectedThread = myApplication.getConnectedThread();
+
+                    // set top motor
+                    byte[] launchBytes = buildStartClockWiseCommand();
+                    connectedThread.write(launchBytes);
+                }
+                if (event.getAction() == MotionEvent.ACTION_UP){
+                    MyApplication myApplication = ((MyApplication)getApplicationContext());
+                    ConnectedThread connectedThread = myApplication.getConnectedThread();
+
+                    // set top motor
+                    byte[] launchBytes = buildStopXRotationCommand();
+                    connectedThread.write(launchBytes);
+                }
+                return false;
+            }
+        };
+        clockButton.setOnTouchListener(clockListener);
     }
 
 
@@ -76,11 +115,38 @@ public class MainActivity extends ActionBarActivity {
      *******************/
 
     public void onXCounterClicked(View view){
-        String counterStartString = buildXAngleCommand(Rotation.CounterClockWise);
+        //String counterStartString = buildXAngleCommand(Rotation.CounterClockWise);
     }
 
     public void onXClockClicked(View view)    {
-        String counterClockStartString = buildXAngleCommand(Rotation.CounterClockWise);
+        //String counterClockStartString = buildXAngleCommand(Rotation.CounterClockWise);
+    }
+
+    public void onUpdateMotorClick(View view){
+        MyApplication myApplication = ((MyApplication)getApplicationContext());
+        ConnectedThread connectedThread = myApplication.getConnectedThread();
+
+        // set top motor
+        byte[] launchBytes = buildTopMotorCommand();
+        connectedThread.write(launchBytes);
+
+        // set bottom motor
+        launchBytes = buildBottomMotorCommand();
+        connectedThread.write(launchBytes);
+    }
+
+    public void onKillMotorClick(View view){
+        MyApplication myApplication = ((MyApplication)getApplicationContext());
+        ConnectedThread connectedThread = myApplication.getConnectedThread();
+        byte[] launchBytes = buildKillMotorCommand();
+        connectedThread.write(launchBytes);
+    }
+
+    public void onYClick(View view){
+        MyApplication myApplication = ((MyApplication)getApplicationContext());
+        ConnectedThread connectedThread = myApplication.getConnectedThread();
+        byte[] launchBytes = buildYAngleCommand();
+        connectedThread.write(launchBytes);
     }
 
     public void onLaunchButtonClicked(View view)
@@ -98,7 +164,18 @@ public class MainActivity extends ActionBarActivity {
      *******************
      *******************/
 
-    public String buildTopMotorCommand()
+    public byte[] buildKillMotorCommand(){
+        return new byte[]{
+            Command.KillMotors.getNumVal(),
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00
+        };
+    }
+
+    public byte[] buildTopMotorCommand()
     {
         byte commandByte = Command.AdjustSpeed.getNumVal();
         byte motorNumberByte = TOP_MOTOR_VALUE;
@@ -107,16 +184,17 @@ public class MainActivity extends ActionBarActivity {
         byte leastSignificantByte = (byte)motorValue;
         byte mostSignificantByte = (byte)(motorValue >>> 8);
 
-        return String.format("0x%02X%02X%02X%02X%02X%02X",
-                             commandByte,
-                             motorNumberByte,
-                             mostSignificantByte,
-                             leastSignificantByte,
-                             0x00,
-                             0x00);
+        return new byte[]{
+                commandByte,
+                motorNumberByte,
+                mostSignificantByte,
+                leastSignificantByte,
+                0x00,
+                0x00
+        };
     }
 
-    public String buildBottomMotorCommand()
+    public byte[] buildBottomMotorCommand()
     {
         byte commandByte = Command.AdjustSpeed.getNumVal();
         byte motorNumberByte = BOTTOM_MOTOR_VALUE;
@@ -125,45 +203,59 @@ public class MainActivity extends ActionBarActivity {
         byte leastSignificantByte = (byte)motorValue;
         byte mostSignificantByte = (byte)(motorValue >>> 8);
 
-        return String.format("0x%02X%02X%02X%02X%02X%02X",
-                             commandByte,
-                             motorNumberByte,
-                             mostSignificantByte,
-                             leastSignificantByte,
-                             0x00,
-                             0x00);
+        return new byte[]{
+                commandByte,
+                motorNumberByte,
+                mostSignificantByte,
+                leastSignificantByte,
+                0x00,
+                0x00
+        };
     }
 
-    public String buildXAngleCommand(Rotation rotation)
-    {
+    public byte[] buildStartClockWiseCommand(){
         byte commandByte = Command.AdjustAngle.getNumVal();
         byte servoNumberByte = X_SERVO_VALUE;
 
-        int servoValue = (int)(getXAngle() * ANGLE_FACTOR);
-
-        if(rotation == Rotation.ClockWise)
-        {
-            return String.format("0x%02X%02X%02X%02X%02X%02X",
-                    commandByte,
-                    servoNumberByte,
-                    0x8f,
-                    0xff,
-                    0x00,
-                    0x00);
-        }
-        else
-        {
-            return String.format("0x%02X%02X%02X%02X%02X%02X",
-                    commandByte,
-                    servoNumberByte,
-                    0x6f,
-                    0xff,
-                    0x00,
-                    0x00);
-        }
+        return new byte[]{
+                commandByte,
+                servoNumberByte,
+                (byte)0x8f,
+                (byte)0xff,
+                0x00,
+                0x00
+        };
     }
 
-    public String buildYAngleCommand()
+    public byte[] buildStartCounterClockWiseCommand(){
+        byte commandByte = Command.AdjustAngle.getNumVal();
+        byte servoNumberByte = X_SERVO_VALUE;
+
+        return new byte[]{
+                commandByte,
+                servoNumberByte,
+                (byte)0x6f,
+                (byte)0xff,
+                0x00,
+                0x00
+        };
+    }
+
+    public byte[] buildStopXRotationCommand(){
+        byte commandByte = Command.AdjustAngle.getNumVal();
+        byte servoNumberByte = X_SERVO_VALUE;
+
+        return new byte[]{
+                commandByte,
+                servoNumberByte,
+                (byte)0x7f,
+                (byte)0xff,
+                0x00,
+                0x00
+        };
+    }
+
+    public byte[] buildYAngleCommand()
     {
         byte commandByte = Command.AdjustAngle.getNumVal();
         byte servoNumberByte = Y_SERVO_VALUE;
@@ -172,13 +264,21 @@ public class MainActivity extends ActionBarActivity {
         byte leastSignificantByte = (byte)servoValue;
         byte mostSignificantByte = (byte)(servoValue >>> 8);
 
-        return String.format("0x%02X%02X%02X%02X%02X%02X",
-                             commandByte,
-                             servoNumberByte,
-                             mostSignificantByte,
-                             leastSignificantByte,
-                             0x00,
-                             0x00);
+        if(servoValue/ANGLE_FACTOR < 90 || servoValue/ANGLE_FACTOR >150 )
+        {
+            servoValue = (int)(90 * ANGLE_FACTOR);
+            leastSignificantByte = (byte)servoValue;
+            mostSignificantByte = (byte)(servoValue >>> 8);
+        }
+
+        return new byte[]{
+                commandByte,
+                servoNumberByte,
+                mostSignificantByte,
+                leastSignificantByte,
+                0x00,
+                0x00
+        };
     }
 
     public byte[] buildLaunchBallsCommand()
@@ -196,14 +296,6 @@ public class MainActivity extends ActionBarActivity {
                 0x00,
                 0x00
         };
-
-//        return String.format("0x%02X%02X%02X%02X%02X%02X",
-//                             commandByte,
-//                             ballsByte,
-//                             0x00,
-//                             0x00,
-//                             0x00,
-//                             0x00);
     }
 
     /*******************
@@ -214,6 +306,9 @@ public class MainActivity extends ActionBarActivity {
     public int getTopMotorLevel() {
         TextView topMotorTextView = (TextView)findViewById(R.id.topMotorSpeedEditText);
 
+        if(topMotorTextView.getText().toString().matches("")){
+            topMotorTextView.setText("0");
+        }
         return Integer.parseInt(topMotorTextView.getText().toString());
     }
 
@@ -221,25 +316,28 @@ public class MainActivity extends ActionBarActivity {
     public int getBottomMotorLevel() {
         TextView bottomMotorTextView = (TextView)findViewById(R.id.bottomMotorSpeedTextView);
 
+        if(bottomMotorTextView.getText().toString().matches("")){
+            bottomMotorTextView.setText("0");
+        }
         return Integer.parseInt(bottomMotorTextView.getText().toString());
-    }
-
-    // X Angle Protocol
-    public int getXAngle() {
-        TextView xAngleTextView = (TextView)findViewById(R.id.xAngleTextView);
-
-        return Integer.parseInt(xAngleTextView.getText().toString());
     }
 
     // Y Angle Protocol
     public int getYAngle() {
         TextView yAngleTextView = (TextView)findViewById(R.id.yAngleTextView);
 
+        if(yAngleTextView.getText().toString().matches("")){
+            yAngleTextView.setText("90");
+        }
         return Integer.parseInt(yAngleTextView.getText().toString());
     }
 
     public int getNumberOfBalls(){
         TextView ballsEditText = (TextView)findViewById(R.id.ballsEditText);
+
+        if(ballsEditText.getText().toString().matches("")){
+            ballsEditText.setText("0");
+        }
 
         return Integer.parseInt(ballsEditText.getText().toString());
     }

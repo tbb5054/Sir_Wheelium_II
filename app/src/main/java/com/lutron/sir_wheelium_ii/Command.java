@@ -4,6 +4,7 @@ package com.lutron.sir_wheelium_ii;
  * Created by tbalch on 2/21/2015.
  */
 public enum Command {
+    KillMotors((byte)0x00),
     AdjustSpeed((byte)0x02),
     AdjustAngle((byte)0x03),
     LaunchBalls((byte)0x04);
